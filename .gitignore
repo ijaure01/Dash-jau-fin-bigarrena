@@ -1,0 +1,9 @@
+# Google Cloud gakoak
+*.json
+.streamlit/secrets.toml
+OAuth_client_created.png 
+
+# Python-eko zaborra
+__pycache__/
+.venv/
+.env
