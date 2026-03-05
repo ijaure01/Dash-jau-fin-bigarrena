@@ -1,9 +1,15 @@
-# Google Cloud gakoak
+# Google Cloud gakoak eta baimenak
 *.json
 .streamlit/secrets.toml
-OAuth_client_created.png 
 
-# Python-eko zaborra
+# Irudiak eta dokumentazio konfidentziala
+OAuth_client_created.png
+*.png
+*.jpg
+*.jpeg
+
+# Python-eko fitxategi tenporalak
 __pycache__/
 .venv/
 .env
+.DS_Store
