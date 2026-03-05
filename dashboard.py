@@ -1,264 +1,155 @@
 import streamlit as st
 import pandas as pd
+from streamlit_gsheets import GSheetsConnection
+import gspread
+from google.oauth2.service_account import Credentials
 import plotly.express as px
 
-# --- 1. KONFIGURAZIOA ETA ESTILO ELITE ---
-st.set_page_config(layout="wide", page_title="Finantza Dashboard Elite")
+# --- 1. KONFIGURAZIOA ---
+st.set_page_config(page_title="Finantza Analisia 2026", layout="wide")
 
-st.markdown("""
-    <style>
-        /* 1. OROKORRA: Goiko tarte zuria eta marjinak kentzeko */
-        .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 0rem !important;
-        }
-        header {visibility: hidden;}
-        
-        /* Orrialdeko fondo ilun dotorea */
-        .stApp {
-            background-color: #262C38 !important;
-            color: #FFFFFF !important;
-        }
-        
-        /* 2. SIDEBAR: Beltzagoa eta iragazki pertsonalizatuak */
-        [data-testid="stSidebar"] {
-            background-color: #313B45 !important;
-        }
-                
-        /* Iragazkien gaineko testua (Labels) zuriz */
-        [data-testid="stWidgetLabel"] p { 
-                color: #FFFFFF !important; 
-                font-weight: bold !important; 
-        }
+# Konexioa secrets.toml-eko datuekin
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-        /* Selectbox eta Multiselect koadro nagusia */
-        div[data-baseweb="select"] > div {
-            background-color: #000000 !important;
-            color: #FFFFFF !important;
-            border: 1px solid #4d5866 !important;
-        }
+# Saioaren egoera hasieratu
+if "autentifikatua" not in st.session_state:
+    st.session_state.autentifikatua = False
+if "orrialdea" not in st.session_state:
+    st.session_state.orrialdea = "Grafikak"
 
-        /* Multiselect-eko etiketa hautatuak (pills) */
-        span[data-baseweb="tag"] {
-            background-color: #1b2129 !important; /* Beltz-grisaxka pixka bat bereizteko */
-            border: 1px solid #4d5866 !important;
+# --- 2. LOGIN DISEINUA ---
+def erakutsi_login():
+    st.markdown("""
+        <style>
+        .login-card {
+            background-color: #1d1e24;
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 1px solid #31333f;
+            text-align: center;
+            max-width: 500px;
+            margin: auto;
         }
-
-        /* Testu guztiak zuriz iragazkietan */
-        span[data-baseweb="tag"] span, div[data-baseweb="select"] div {
-            color: #FFFFFF !important;
-        }
-
-        /* Zerrenda zabaldua (Dropdown) */
-        div[data-baseweb="popover"] ul {
-            background-color: #000000 !important;
-        }
-        div[data-baseweb="popover"] li {
-            color: #FFFFFF !important;
-        }
-                
-        div[data-baseweb="popover"] li:hover {
-            background-color: #313B45 !important;
-        }
-
-        /* 3. METRIKA KOADROAK (KPIs): Fondo argiagoa eta testu itzala */
-        div[data-testid="stMetric"] {
-            background-color: #7A8D9C !important;
-            padding: 25px !important;
-            border-radius: 12px !important;
-            border: 1px solid #4d5866 !important;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-        }
-
-        [data-testid="stMetricValue"] {
-            color: #c9a050 !important;
-            font-size: 48px !important;
-            text-shadow: 1px 1px 2px black;
-        }
-        
-        [data-testid="stMetricLabel"] {
-            color: #ffffff !important;
-            font-weight: bold !important;
-            letter-spacing: 1px;
-        }
-
-        /* 4. TAULA ESTILOA: Beltza eta testu zuria */
-        .stDataFrame {
-            border: 1px solid #3d4654 !important;
-            border-radius: 8px !important;
-            background-color: #0b0e14 !important;
-        }
-    </style>
+        </style>
     """, unsafe_allow_html=True)
 
-
-
-
-# --- 2. HIZKUNTZA ETA HIZTEGIA ---
-hiztegiak = {
-    "Euskara": {
-        "titulua": "FINANTZA ANALISIA", "guztira": "GASTUA GUZTIRA", "batezbestekoa": "EGUNEKO BATEZ BESTEKOA", 
-        "garestiena": "KATEGORIA GARESTIENA", "top5": "TOP 5 GASTUAK KATEGORIAZ", "bilakaera": "Gastuen Bilakaera",
-        "banaketa": "Gastuen Banaketa", "aukeratu_kat": "Aukeratu kategoria:", "xehetasuna": "Xehetasuna",
-        "urla_label": "Sartu Google Sheets URLa (Hutsik hirea ikusteko):", "errore_urla": "Ezin izan dira datuak kargatu. Begiratu URLa."
-    },
-    "Español": {
-        "titulua": "ANÁLISIS FINANCIERO", "guztira": "GASTO TOTAL", "batezbestekoa": "PROMEDIO DIARIO", 
-        "garestiena": "CATEGORÍA MÁS CARA", "top5": "TOP 5 GASTOS POR CATEGORÍA", "bilakaera": "Evolución de Gastos",
-        "banaketa": "Distribución de Gastos", "aukeratu_kat": "Selecciona categoría:", "xehetasuna": "Detalle",
-        "urla_label": "Introduce URL de Google Sheets (Vacio para ver el mio):", "errore_urla": "No se han podido cargar los datos. Revisa la URL."
-    },
-    "English": {
-        "titulua": "FINANCIAL ANALYSIS", "guztira": "TOTAL EXPENSE", "batezbestekoa": "DAILY AVERAGE", 
-        "garestiena": "MOST EXPENSIVE CATEGORY", "top5": "TOP 5 EXPENSES BY CATEGORY", "bilakaera": "Expense Evolution",
-        "banaketa": "Expense Distribution", "aukeratu_kat": "Select category:", "xehetasuna": "Details",
-        "urla_label": "Enter Google Sheets URL (Empty for default):", "errore_urla": "Could not load data. Check the URL."
-    }
-}
-
-lang = st.sidebar.selectbox("Language / Hizkuntza", ["Euskara", "Español", "English"])
-t = hiztegiak[lang]
-
-# --- 3. DATUAK KARGATZEKO LOGIKA (DINAMIKOA ETA MALGUA) ---
-NIRE_SHEET_ID = '183PzIo747C4MHQcE0homP49avMonmuXytIvECZ7qrYM'
-
-url_input = st.sidebar.text_input(t['urla_label'], placeholder="https://docs.google.com/...")
-
-def get_url(input_val):
-    if input_val and "/d/" in input_val:
-        sid = input_val.split("/d/")[1].split("/")[0]
-        return f'https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:csv'
-    return f'https://docs.google.com/spreadsheets/d/{NIRE_SHEET_ID}/gviz/tq?tqx=out:csv'
-
-@st.cache_data(ttl=300)
-def load_data(url_to_load):
-    try:
-        raw_df = pd.read_csv(url_to_load)
-        # ZUTABEAK BERRIZENDATU ORDENAREN ARABERA (Malgutasuna lagunarentzat)
-        # Ordena: 0=Data, 1=Kategoria, 2=Deskribapena, 3=Kopurua
-        new_cols = ['Data', 'Kategoria', 'Deskribapena', 'Kopurua']
-        raw_df.columns = new_cols + list(raw_df.columns[len(new_cols):])
-        
-        raw_df['Data'] = pd.to_datetime(raw_df['Data'], dayfirst=True, errors='coerce')
-        if raw_df['Kopurua'].dtype == object:
-            raw_df['Kopurua'] = raw_df['Kopurua'].str.replace('$', '').str.replace(',', '.').str.strip()
-        raw_df['Kopurua'] = pd.to_numeric(raw_df['Kopurua'], errors='coerce').fillna(0)
-        return raw_df.dropna(subset=['Data'])
-    except:
-        return None
-
-final_url = get_url(url_input)
-df = load_data(final_url)
-
-if df is not None:
-    # --- 4. SIDEBAR ETA FILTROAK ---
-    urteak = sorted(df['Data'].dt.year.unique(), reverse=True)
-    urte_aukera = st.sidebar.selectbox("Year", urteak)
+    st.markdown('<div class="login-card">', unsafe_allow_html=True)
+    st.title("Sartu edo Erregistratu Finantza Dashboard-era")
     
-    # Hilabeteak hizkuntza orokorrean (zenbakiz barnean, izenez kanpoan)
-    df['Month_Name'] = df['Data'].dt.month_name()
-    hilabete_guztiak = df[df['Data'].dt.year == urte_aukera]['Month_Name'].unique().tolist()
-    hila_aukerak = st.sidebar.multiselect("Months", options=hilabete_guztiak, default=hilabete_guztiak)
+    if st.button("🚀 Jarraitu Google bidez", use_container_width=True):
+        st.session_state.user_email = "mikel@gmail.com" 
+        st.session_state.autentifikatua = True
+        st.rerun()
 
-    df_filtratua = df[(df['Data'].dt.year == urte_aukera) & (df['Month_Name'].isin(hila_aukerak))]
-
-    # --- 5. GRAFIKOAK (LEHENGO ESTILOA) ---
-    PALETA_ELITE = ["#3d5a80", "#c9a050", "#98c1d9", "#566d7e", "#293241"]
-
-    def style_fig_elite(fig):
-        fig.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color="white", size=12),
-            legend = dict (
-                title = None,
-                font = dict(color = "#FFFFFF", size = 14)
-            ),
-            margin=dict(t=30, b=10, l=10, r=10),
-            colorway=PALETA_ELITE
-        )
-        # X ARDATZA (Datak, Kategoriak...)
-        fig.update_xaxes(
-            title = None,
-            tickfont=dict(color="#FFFFFF", size=11), # Zenbaki/Testu guztiak zuriz
-            #titlefont=dict(color="#FFFFFF"),
-            gridcolor='#3d4654', 
-            zeroline=False,
-            showgrid=True
-        )
-        
-        # Y ARDATZA (Diru kopuruak...)
-        fig.update_yaxes(
-            title = None,
-            tickfont=dict(color="#FFFFFF", size=11), # Zenbaki guztiak zuriz
-            #titlefont=dict(color="#FFFFFF"),
-            gridcolor='#3d4654', 
-            zeroline=False,
-            showgrid=True
-        )
-        return fig
-
-    st.title(f"{t['titulua']}: {urte_aukera}")
+    st.write("---")
+    st.write("**Login Aukerak**")
+    reg_mode = st.toggle("Erregistratu berria baldin bauk")
     
-    # KPI-ak
-    c1, c2, c3 = st.columns(3)
-    with c1: st.metric(t['guztira'], f"$ {df_filtratua['Kopurua'].sum():,.2f}")
-    with c2:
-        egun_kop = len(df_filtratua['Data'].dt.date.unique()) if not df_filtratua.empty else 1
-        st.metric(t['batezbestekoa'], f"$ {(df_filtratua['Kopurua'].sum()/egun_kop):,.2f}")
-    with c3:
-        if not df_filtratua.empty:
-            garestiena = df_filtratua.groupby('Kategoria')['Kopurua'].sum().idxmax()
-            st.metric(t['garestiena'], garestiena)
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Sartu", type="primary" if not reg_mode else "secondary", use_container_width=True):
+            st.session_state.user_email = "erabiltzaile_test@gmail.com"
+            st.session_state.autentifikatua = True
+            st.rerun()
+    with col2:
+        st.button("Erregistratu", type="primary" if reg_mode else "secondary", use_container_width=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Grafiko nagusiak
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_left, col_right = st.columns(2)
-    with col_left:
-        st.subheader(t['banaketa'])
-        fig_pie = px.pie(df_filtratua, values='Kopurua', names='Kategoria', hole=0.5)
-        fig_pie.update_traces(
-            textinfo='none',
-            marker=dict(line=dict(color='#262C38', width=2))
-        )
-        st.plotly_chart(style_fig_elite(fig_pie), use_container_width=True)
-
-    with col_right:
-        st.subheader(t['bilakaera'])
-        df_daily = df_filtratua.groupby('Data')['Kopurua'].sum().reset_index()
-        fig_line = px.line(df_daily, x='Data', y='Kopurua', markers=True)
-        # Behartu urrezko lerroa eta puntuak
-        fig_line.update_traces(
-            line_color = '#c9a050',
-            fill = 'tozeroy',
-            fillcolor = 'rgba(201, 160, 80, 0.2)', 
-            marker=dict(size=8)
-        )
-        st.plotly_chart(style_fig_elite(fig_line), use_container_width=True)
-
-    # Top 5 atala
-    st.markdown(f"### {t['top5']}")
-    if not df_filtratua.empty:
-        kategoriak = df_filtratua['Kategoria'].unique()
-        kat_aukera = st.selectbox(t['aukeratu_kat'], kategoriak)
-        top5 = df_filtratua[df_filtratua['Kategoria'] == kat_aukera].nlargest(5, 'Kopurua')
-
-        col_table, col_bar = st.columns([1, 1]) # Taula 1, Grafika 2
-        with col_table:
-            st.write(f"**{t['xehetasuna']}**")
-            # Taula estilo ilunarekin erakutsi
-            st.dataframe(top5[['Data', 'Deskribapena', 'Kopurua']].style.set_properties(**{'background-color': "#1b2129", 'color': 'white'}), use_container_width=True, hide_index=True)
-            
-        with col_bar:
-            # Grafika kolore urdin/gris dotoreekin
-            fig_top = px.bar(top5, x='Kopurua', y='Deskribapena', orientation='h')
-            fig_top.update_traces(
-                marker_color='#738496',
-                width = 0.5,
-                texttemplate='%{text:.1s} $',
-                textposition='outside',
-                textfont=dict(color="white")
-            ) # Urdin pro hori
-            st.plotly_chart(style_fig_elite(fig_top), use_container_width=True)
+# --- 3. APLIKAZIOAREN LOGIKA ---
+if not st.session_state.autentifikatua:
+    erakutsi_login()
 else:
-    st.error(t['errore_urla'])
+    # Sidebar
+    with st.sidebar:
+        st.subheader(f"Kaixo, {st.session_state.user_email}")
+        if st.button("📊 Grafikak", use_container_width=True, 
+                     type="primary" if st.session_state.orrialdea == "Grafikak" else "secondary"):
+            st.session_state.orrialdea = "Grafikak"
+        if st.button("📑 Taula", use_container_width=True,
+                     type="primary" if st.session_state.orrialdea == "Taula" else "secondary"):
+            st.session_state.orrialdea = "Taula"
+        st.divider()
+        if st.button("Saioa itxi"):
+            st.session_state.autentifikatua = False
+            st.rerun()
+
+    # --- DATUAK KARGATU ETA SORTU ---
+    email_orria = st.session_state.user_email
+    
+    try:
+        # Saia gaitezen orria irakurtzen
+        df = conn.read(worksheet=email_orria, ttl=0)
+    except Exception:
+        # Orria ez bada existitzen, gspread erabiliz sortu
+        try:
+            creds_dict = st.secrets["connections"]["gsheets"]
+            scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+            creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+            client = gspread.authorize(creds)
+            sh = client.open_by_url(st.secrets["connections"]["gsheets"]["spreadsheet"])
+            
+            sh.add_worksheet(title=email_orria, rows="100", cols="20")
+            df = pd.DataFrame(columns=["Date", "Category", "Notes", "Amount"])
+            conn.update(worksheet=email_orria, data=df)
+            st.toast(f"Orri berria sortu dugu: {email_orria}")
+        except Exception as e:
+            st.error(f"Ezin izan dugu orria sortu: {e}")
+            df = pd.DataFrame(columns=["Date", "Category", "Notes", "Amount"])
+
+    # --- DATU MOTAK BEREZITU (Data erroreak ekiditeko) ---
+    # Behartu datuak mota egokian egon daitezen editorean sartu aurretik
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df['Amount'] = pd.to_numeric(df['Amount'], errors='coerce').fillna(0.0)
+    # Kategoria zutabea testu gisa ziurtatu
+    df['Category'] = df['Category'].astype(str).replace('nan', '')
+
+    # --- GRAFIKAK ORRIALDEA ---
+    if st.session_state.orrialdea == "Grafikak":
+        st.markdown(f"<h1 style='text-align: center;'>Gastuen Bilakaera</h1>", unsafe_allow_html=True)
+        
+        # Garbitu datu hutsak grafikoa ez puskatzeko
+        df_valid = df.dropna(subset=['Category', 'Amount'])
+        df_valid = df_valid[df_valid['Amount'] > 0]
+        
+        if df_valid.empty:
+            st.info("Ez dago datu nahikorik grafikatzeko. Sartu gastu batzuk 'Taula' atalean.")
+        else:
+            df_sum = df_valid.groupby("Category")["Amount"].sum().reset_index()
+            fig = px.pie(df_sum, values='Amount', names='Category', hole=.5,
+                         color_discrete_sequence=px.colors.qualitative.Pastel)
+            fig.update_layout(showlegend=True, paper_bgcolor='rgba(0,0,0,0)', 
+                              plot_bgcolor='rgba(0,0,0,0)', font_color="white")
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Geziak (Nabigazio simulazioa)
+            gc1, gc2, gc3 = st.columns([1, 2, 1])
+            with gc1: st.button("«", use_container_width=True, key="prev")
+            with gc3: st.button("»", use_container_width=True, key="next")
+
+    # --- TAULA ORRIALDEA ---
+    elif st.session_state.orrialdea == "Taula":
+        st.markdown(f"## Datuen Taula - {email_orria}")
+        
+        edited_df = st.data_editor(
+            df,
+            num_rows="dynamic",
+            use_container_width=True,
+            column_config={
+                "Date": st.column_config.DateColumn("Data", required=True),
+                # Hemen dago aldaketa: SelectboxColumn kendu dugu edozer idatzi ahal izateko
+                "Category": st.column_config.TextColumn("Kategoria", help="Idatzi nahi duzun kategoria"),
+                "Amount": st.column_config.NumberColumn("Kopurua", format="$%.2f", min_value=0)
+            }
+        )
+        
+        if st.button("💾 Gorde Aldaketak", use_container_width=True):
+            # Gorde aurretik datak testu formatura pasatu Sheets-entzat
+            df_to_save = edited_df.copy()
+            if not df_to_save.empty:
+                df_to_save['Date'] = df_to_save['Date'].dt.strftime('%Y-%m-%d')
+            
+            conn.update(worksheet=email_orria, data=df_to_save)
+            st.cache_data.clear()
+            st.success(f"Datuak ondo gordeta!")
+            st.balloons()
