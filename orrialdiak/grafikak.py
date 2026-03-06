@@ -58,11 +58,11 @@ def erakutsi_grafikak(df):
     # --- 3. IRAGAZKIAK ---
     _, col_f = st.columns([5, 1])
     with col_f:
-        with st.popover(f"🔍 {translate('filters')}", use_container_width=True):
+        with st.popover(f"🔍 {translate('filters')}", width='stretch'):
             urteak = sorted(df['Year'].dropna().unique(), reverse=True)
             st.selectbox(translate("year"), urteak if urteak else [2026], key="f_urtea")
             st.multiselect(translate("months"), options=hilabete_guztiak, key="f_hilabeteak")
-            if st.button("OK", use_container_width=True): st.rerun()
+            if st.button("OK", width='stretch'): st.rerun()
 
     # --- 4. CAROUSEL LOGIKA ---
     # Giltzak erabiltzen ditugu itzulpenak lortzeko
@@ -76,20 +76,20 @@ def erakutsi_grafikak(df):
 
     with col_gezia_l:
         st.markdown("<div style='height: 180px;'></div>", unsafe_allow_html=True)
-        if st.button("«", key="prev_g", use_container_width=True):
+        if st.button("«", key="prev_g", width='stretch'):
             st.session_state.grafiko_index = (st.session_state.grafiko_index - 1) % len(grafiko_keys)
             st.rerun()
 
     with col_grafika:
         if uneko_key == "chart_distribution":
             fig = px.pie(df_filtratua, values='Amount', names='Category', hole=0.5)
-            st.plotly_chart(style_fig_elite(fig), use_container_width=True)
+            st.plotly_chart(style_fig_elite(fig), width='stretch')
         
         elif uneko_key == "chart_evolution":
             df_daily = df_filtratua.groupby('Date')['Amount'].sum().reset_index()
             fig = px.line(df_daily, x='Date', y='Amount', markers=True)
             fig.update_traces(line_color='#c9a050', fill='tozeroy', fillcolor='rgba(201, 160, 80, 0.2)')
-            st.plotly_chart(style_fig_elite(fig), use_container_width=True)
+            st.plotly_chart(style_fig_elite(fig), width='stretch')
 
         elif uneko_key == "chart_sunburst":
             df_sun = df_filtratua.copy()
@@ -97,7 +97,7 @@ def erakutsi_grafikak(df):
             if not df_sun.empty:
                 df_sun['Notes_Unique'] = df_sun['Notes'] + " (" + df_sun.index.astype(str) + ")"
                 fig = px.sunburst(df_sun, path=['Category', 'Notes_Unique'], values='Amount', hover_data=['Notes'])
-                st.plotly_chart(style_fig_elite(fig), use_container_width=True)
+                st.plotly_chart(style_fig_elite(fig), width='stretch')
             else: st.warning(translate("no_notes_warning"))
 
         elif uneko_key == "chart_treemap":
@@ -106,12 +106,12 @@ def erakutsi_grafikak(df):
             if not df_tree.empty:
                 df_tree['Notes_Unique'] = df_tree['Notes'] + " (" + df_tree.index.astype(str) + ")"
                 fig = px.treemap(df_tree, path=['Category', 'Notes_Unique'], values='Amount', hover_data=['Notes'])
-                st.plotly_chart(style_fig_elite(fig), use_container_width=True)
+                st.plotly_chart(style_fig_elite(fig), width='stretch')
             else: st.warning(translate("no_notes_warning"))
 
         elif uneko_key == "chart_heatmap":
             fig = px.density_heatmap(df_filtratua, x="Day_of_Week", y="Category", z="Amount", color_continuous_scale=['#313B45', '#c9a050'])
-            st.plotly_chart(style_fig_elite(fig), use_container_width=True)
+            st.plotly_chart(style_fig_elite(fig), width='stretch')
 
         elif uneko_key == "chart_top5":
             st.markdown("<br>", unsafe_allow_html=True)
@@ -122,6 +122,6 @@ def erakutsi_grafikak(df):
 
     with col_gezia_r:
         st.markdown("<div style='height: 180px;'></div>", unsafe_allow_html=True)
-        if st.button("»", key="next_g", use_container_width=True):
+        if st.button("»", key="next_g", width='stretch'):
             st.session_state.grafiko_index = (st.session_state.grafiko_index + 1) % len(grafiko_keys)
             st.rerun()
