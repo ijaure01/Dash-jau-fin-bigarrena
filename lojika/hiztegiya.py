@@ -1,6 +1,5 @@
 import streamlit as st
 
-# Hiztegi nagusia
 TRANSLATIONS = {
     "eu": {
         "title": "Finantza Dashboard-a",
@@ -12,7 +11,22 @@ TRANSLATIONS = {
         "date": "Data",
         "category": "Kategoria",
         "amount": "Kopurua",
-        "notes": "Oharrak"
+        "notes": "Oharrak",
+        "total_expense": "GASTUA GUZTIRA",
+        "daily_avg": "EGUNEKO BATEZ BESTEKOA",
+        "filters": "IRAGAZKIAK",
+        "year": "Urtea",
+        "months": "Hilabeteak",
+        "no_data": "Ez dago daturik.",
+        "saving": "Gordetzen...",
+        "save_success": "✅ Datuak ondo gordeta!",
+        "chart_distribution": "Banaketa",
+        "chart_evolution": "Bilakaera",
+        "chart_sunburst": "Xehetasuna (Sunburst)",
+        "chart_treemap": "Bolumena (Treemap)",
+        "chart_heatmap": "Intentsitatea (Heatmap)",
+        "chart_top5": "Top 5 Taula",
+        "no_notes_warning": "Ez dago oharrik (Notes) grafika hau osatzeko."
     },
     "es": {
         "title": "Dashboard Financiero",
@@ -24,7 +38,22 @@ TRANSLATIONS = {
         "date": "Fecha",
         "category": "Categoría",
         "amount": "Cantidad",
-        "notes": "Notas"
+        "notes": "Notas",
+        "total_expense": "GASTO TOTAL",
+        "daily_avg": "PROMEDIO DIARIO",
+        "filters": "FILTROS",
+        "year": "Año",
+        "months": "Meses",
+        "no_data": "No hay datos.",
+        "saving": "Guardando...",
+        "save_success": "✅ ¡Datos guardados correctamente!",
+        "chart_distribution": "Distribución",
+        "chart_evolution": "Evolución",
+        "chart_sunburst": "Detalle (Sunburst)",
+        "chart_treemap": "Volumen (Treemap)",
+        "chart_heatmap": "Intensidad (Heatmap)",
+        "chart_top5": "Tabla Top 5",
+        "no_notes_warning": "No hay notas para completar este gráfico."
     },
     "en": {
         "title": "Financial Dashboard",
@@ -36,7 +65,22 @@ TRANSLATIONS = {
         "date": "Date",
         "category": "Category",
         "amount": "Amount",
-        "notes": "Notes"
+        "notes": "Notes",
+        "total_expense": "TOTAL EXPENSE",
+        "daily_avg": "DAILY AVERAGE",
+        "filters": "FILTERS",
+        "year": "Year",
+        "months": "Months",
+        "no_data": "No data available.",
+        "saving": "Saving...",
+        "save_success": "✅ Data saved successfully!",
+        "chart_distribution": "Distribution",
+        "chart_evolution": "Evolution",
+        "chart_sunburst": "Detail (Sunburst)",
+        "chart_treemap": "Volume (Treemap)",
+        "chart_heatmap": "Intensity (Heatmap)",
+        "chart_top5": "Top 5 Table",
+        "no_notes_warning": "No notes available for this chart."
     }
 }
 
