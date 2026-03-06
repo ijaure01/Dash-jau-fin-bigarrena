@@ -31,19 +31,25 @@ def erakutsi_taula(df, conn, email_orria):
     if st.button(f"💾 {translate('save')}", width='stretch', type="primary"):
         with st.spinner(translate("saving")):
             try:
+                # 1. Copia egin eta datak formatu egokira pasatu ordenatzeko
                 df_to_save = edited_df.copy()
-                existing_ids = pd.to_numeric(df_to_save["ID"], errors='coerce').dropna()
-                max_id = int(existing_ids.max()) if not existing_ids.empty else 0
+                df_to_save['Date'] = pd.to_datetime(df_to_save['Date'], errors='coerce')
                 
-                for i in range(len(df_to_save)):
-                    if pd.isna(df_to_save.iloc[i, df_to_save.columns.get_loc("ID")]):
-                        max_id += 1
-                        df_to_save.iloc[i, df_to_save.columns.get_loc("ID")] = max_id
+                # 2. DATAREN ARABERA ORDENATU (Zaharrenetik berrienera)
+                # Oharra: errenkada berriek data badute, automatikoki bere tokian sartuko dira
+                df_to_save = df_to_save.sort_values(by='Date', ascending=True).reset_index(drop=True)
 
+                # 3. ID-AK BERRANTOLATU
+                # Behin ordenatuta, IDak 1etik N-ra berridazten ditugu sekuentzia zuzena izan dezaten
+                df_to_save["ID"] = range(1, len(df_to_save) + 1)
+
+                # 4. DATA FORMATUA PRESTATU (Sheets-erako testu moduan)
                 if not df_to_save.empty:
                     df_to_save['Date'] = df_to_save['Date'].dt.strftime('%Y/%m/%d')
                 
+                # 5. GOOGLE SHEETS EGUNERATU
                 conn.update(worksheet=email_orria, data=df_to_save)
+                
                 st.cache_data.clear()
                 st.success(translate("save_success"))
                 st.balloons()
