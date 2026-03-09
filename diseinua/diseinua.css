@@ -118,3 +118,53 @@ div.stButton > button[kind="secondary"] {
     margin: 0 auto;
     box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
 }*/
+
+/*GRAFIKAK*/
+
+/* Popover botoia Material Icon-erako egokitua */
+div[data-testid="stPopover"] > button {
+    background-color: transparent !important;
+    border: 1px solid #C3A6A0 !important;
+    border-radius: 50% !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* Ikonoaren tamaina eta kolorea (Streamlit-ek <span> barruan sartzen du) */
+div[data-testid="stPopover"] span {
+    font-size: 22px !important;
+    color: #A15C38 !important;
+}
+
+div[data-testid="stPopover"] > button:hover span {
+    color: white !important;
+}
+
+/* Multiselect-eko "etiketak" edo aukeratutako elementuak */
+span[data-baseweb="tag"] {
+    background-color: #A15C38 !important; /* Marroia */
+    color: white !important;
+}
+
+/* Etiketaren barruko "X" botoia (ezabatzeko) */
+span[data-baseweb="tag"] svg {
+    fill: white !important;
+}
+
+/* Multiselect-aren borda fokatzean, gorria izan ez dadin */
+div[data-baseweb="select"] > div:focus-within {
+    border-color: #C3A6A0 !important;
+}
+
+/* Plotly-ren barruko testu guztiak beltzera behartu (SVG-an) */
+.js-plotly-plot .plotly .main-svg .xtick text, 
+.js-plotly-plot .plotly .main-svg .ytick text,
+.js-plotly-plot .plotly .main-svg .g-gtitle text,
+.js-plotly-plot .plotly .main-svg .legendtext {
+    fill: black !important;
+}

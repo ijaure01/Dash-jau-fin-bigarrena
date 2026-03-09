@@ -6,15 +6,30 @@ from lojika.hiztegiya import translate
 
 def style_fig_elite(fig):
     PALETA_ELITE = ["#3d5a80", "#c9a050", "#98c1d9", "#566d7e", "#293241"]
+    
+    # 1. Diseinu orokorra (Letra BELTZEZ)
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="white", size=12),
-        legend=dict(title=None, font=dict(color="#FFFFFF", size=12)),
-        margin=dict(t=20, b=20, l=0, r=0),
+        font=dict(color="black", size=12),
+        # Legendaren testua ere beltzez (lehen zuriz zegoen)
+        legend=dict(title=None, font=dict(color="black", size=12)),
+        margin=dict(t=10, b=10, l=0, r=0),
         colorway=PALETA_ELITE,
         height=450
     )
+
+    # 2. Trace-ak modu seguruan eguneratu
+    # Tarta grafikoa bada, testua kanpora bota eta beltzera behartu
+    if fig.data and fig.data[0].type == 'pie':
+        fig.update_traces(textfont_color="black", textposition='outside')
+    else:
+        # Beste guztietan (Heatmap, Line, etc.) kolorea soilik aldatu, posizioa ukitu gabe
+        try:
+            fig.update_traces(textfont_color="black")
+        except:
+            pass # Grafiko motak textfont onartzen ez badu (Heatmap batzuk), ez egin ezer
+
     return fig
 
 def erakutsi_grafikak(df):
@@ -31,11 +46,17 @@ def erakutsi_grafikak(df):
 
     hilabete_guztiak = ["January", "February", "March", "April", "May", "June", 
                         "July", "August", "September", "October", "November", "December"]
+    kategoria_guztiak = sorted(df['Category'].dropna().unique().tolist())
     
     if "f_urtea" not in st.session_state: st.session_state.f_urtea = datetime.now().year
     if "f_hilabeteak" not in st.session_state: st.session_state.f_hilabeteak = hilabete_guztiak
+    if "f_kategoriak" not in st.session_state: st.session_state.f_kategoriak = kategoria_guztiak
 
-    df_filtratua = df[(df['Year'] == st.session_state.f_urtea) & (df['Month_Name'].isin(st.session_state.f_hilabeteak))]
+    df_filtratua = df[
+        (df['Year'] == st.session_state.f_urtea) & 
+        (df['Month_Name'].isin(st.session_state.f_hilabeteak)) &
+        (df['Category'].isin(st.session_state.f_kategoriak))
+        ]
 
     # --- 2. KPIak (ITZULITA) ---
     guztira = f"$ {df_filtratua['Amount'].sum():,.2f}"
@@ -58,10 +79,11 @@ def erakutsi_grafikak(df):
     # --- 3. IRAGAZKIAK ---
     _, col_f = st.columns([5, 1])
     with col_f:
-        with st.popover(f"🔍 {translate('filters')}", width='stretch'):
+        with st.popover("", icon=":material/filter_alt:", width='stretch'):
             urteak = sorted(df['Year'].dropna().unique(), reverse=True)
             st.selectbox(translate("year"), urteak if urteak else [2026], key="f_urtea")
             st.multiselect(translate("months"), options=hilabete_guztiak, key="f_hilabeteak")
+            st.multiselect(translate("category"), options=kategoria_guztiak, key="f_kategoriak")
             if st.button("OK", width='stretch'): st.rerun()
 
     # --- 4. CAROUSEL LOGIKA ---
@@ -70,7 +92,7 @@ def erakutsi_grafikak(df):
     if "grafiko_index" not in st.session_state: st.session_state.grafiko_index = 0
     
     uneko_key = grafiko_keys[st.session_state.grafiko_index]
-    st.markdown(f"<h3 style='text-align: center; color: #c9a050; margin-bottom: 0;'>{translate(uneko_key).upper()}</h3>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; color: #c9a050; margin-bottom: 0;'>{translate(uneko_key).upper()}</h3>", unsafe_allow_html=True)
 
     col_gezia_l, col_grafika, col_gezia_r = st.columns([1, 8, 1])
 
