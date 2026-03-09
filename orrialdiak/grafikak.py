@@ -43,14 +43,14 @@ def erakutsi_grafikak(df):
     batez_bestekoa = f"$ {(df_filtratua['Amount'].sum()/egun_kop):,.2f}"
 
     st.markdown(f"""
-        <div style="display: flex; width: 100%; gap: 20px; margin-top: -30px; margin-bottom: 10px;">
-            <div style="flex: 1; background-color: #313B45; padding: 20px; border-radius: 15px; border: 1px solid #c9a050; text-align: center;">
-                <p style="color: #ffffff; font-size: 1.1rem; font-weight: bold; margin: 0; opacity: 0.8;">{translate('total_expense')}</p>
-                <p style="color: #c9a050; font-size: 5vw; font-weight: bold; margin: 0; line-height: 1;">{guztira}</p>
+        <div style="display: flex; width: 100%; gap: 20px; margin-top: -30px; margin-bottom: 20px;">
+            <div style="flex: 1; background-color: #A15C38; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
+                <p style="color: #F7F1F0; font-size: 1.1rem; font-weight: bold; margin: 0; opacity: 0.9;">{translate('total_expense')}</p>
+                <p style="color: #C3A6A0; font-size: 4vw; font-weight: bold; margin: 0; line-height: 1;">{guztira}</p>
             </div>
-            <div style="flex: 1; background-color: #313B45; padding: 20px; border-radius: 15px; border: 1px solid #c9a050; text-align: center;">
-                <p style="color: #ffffff; font-size: 1.1rem; font-weight: bold; margin: 0; opacity: 0.8;">{translate('daily_avg')}</p>
-                <p style="color: #c9a050; font-size: 5vw; font-weight: bold; margin: 0; line-height: 1;">{batez_bestekoa}</p>
+            <div style="flex: 1; background-color: #A15C38; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
+                <p style="color: #F7F1F0; font-size: 1.1rem; font-weight: bold; margin: 0; opacity: 0.9;">{translate('daily_avg')}</p>
+                <p style="color: #C3A6A0; font-size: 4vw; font-weight: bold; margin: 0; line-height: 1;">{batez_bestekoa}</p>
             </div>
         </div>
     """, unsafe_allow_html=True)

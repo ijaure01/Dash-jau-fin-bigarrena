@@ -27,13 +27,13 @@ if "lang" not in st.session_state:
 
 # --- 3. SIDEBAR UNIFORMEA (Guztientzat) ---
 with st.sidebar:
-    st.title(translate("title"))
+    #st.title(translate("title"))
     
     # 🌍 HIZKUNTZA (Beti agertuko da, baita loginean ere)
     hizk_aukera = {"Euskara": "eu", "Español": "es", "English": "en"}
     current_lang_name = [k for k, v in hizk_aukera.items() if v == st.session_state.lang][0]
     
-    hautatutako_hizk = st.selectbox("Hizkuntza", list(hizk_aukera.keys()), 
+    hautatutako_hizk = st.selectbox("", list(hizk_aukera.keys()), 
                                     index=list(hizk_aukera.keys()).index(current_lang_name))
     
     if hizk_aukera[hautatutako_hizk] != st.session_state.lang:
@@ -42,23 +42,32 @@ with st.sidebar:
     
     # 👤 NABIGAZIOA (Bakarrik saioa hasita badago)
     if st.session_state.autentifikatua:
-        st.divider()
-        st.subheader(f"👤 {st.session_state.user_email}")
+        # 👤 PROFILA (Diseinu berria)
+        st.markdown('<div class="sidebar-profile">', unsafe_allow_html=True)
+        # Erabiltzailearen borobila (Emoji edo irudia)
+        st.markdown(f'<div class="profile-circle">👤</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="profile-email">{st.session_state.user_email}</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
         
+        st.markdown('<div class="nav-spacer"></div>', unsafe_allow_html=True) # Tartea
+
+        # 📊 NABIGAZIO BOTOIAK
         if st.button(translate("menu_charts"), width='stretch', 
-                     type="primary" if st.session_state.orrialdea == "Grafikak" else "secondary"):
+                     type="secondary" if st.session_state.orrialdea == "Grafikak" else "primary"):
             st.session_state.orrialdea = "Grafikak"
             st.rerun()
             
         if st.button(translate("menu_table"), width='stretch',
-                     type="primary" if st.session_state.orrialdea == "Taula" else "secondary"):
+                     type="secondary" if st.session_state.orrialdea == "Taula" else "primary"):
             st.session_state.orrialdea = "Taula"
             st.rerun()
             
         st.divider()
-        if st.button(translate("logout"), type="secondary", width='stretch'):
+        st.markdown('<div class="sticky-bottom">', unsafe_allow_html=True)
+        if st.button(translate("logout"), type="primary", width='stretch'):
             st.session_state.autentifikatua = False
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 4. EDUKI NAGUSIA (Logika) ---
 if not st.session_state.autentifikatua:

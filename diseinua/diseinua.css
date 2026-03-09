@@ -1,29 +1,120 @@
-/* Sidebar estiloa */
-[data-testid="stSidebar"] {
-    background-color: #0e1117;
+/* 1. Orrialdearen atzeko kolore nagusia */
+.stApp {
+    background-color: #F7F1F0;
 }
 
-/*
+/* 2. Sidebar estiloa */
+[data-testid="stSidebar"] {
+    background-color: #A15C38;
+}
+
+/* Sidebar-eko testu eta widget guztiak zuriz (kontrasteagatik) */
+[data-testid="stSidebar"] .stMarkdown, 
+[data-testid="stSidebar"] label, 
+[data-testid="stSidebar"] p {
+    color: white !important;
+}
+
+/*SIDEBARREKUA*/
+/* 3. BOTOI AUKERATUA (Primary) -> Kolore argiagoa (#C3A6A0) */
+[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
+    background-color: #A15C38 !important;
+    border: 1px solid #A15C38 !important;
+    color: #262220 !important; /* Testu ilunagoa kontrasterako */
+    font-weight: bold !important;
+}
+
+/* 4. BOTOI EZ-AUKERATUA (Secondary) -> Sidebar-aren hondoaren antzekoa */
+[data-testid="stSidebar"] div.stButton > button[kind="secondary"] {
+    background-color: rgba(255, 255, 255, 0.1) !important; /* Transparentzia pixka bat */
+    border: 1px solid white !important;
+    color: white !important;
+}
+
+/* Botoien gainetik pasatzean (Hover) */
+[data-testid="stSidebar"] div.stButton > button:hover {
+    border-color: rgba(161, 92, 56, 0.6) !important;
+    color: rgba(161, 92, 56, 0.6) !important;
+    background-color: rgba(161, 92, 56, 0.6) !important;
+}
+
+/* Profilaren atala */
+.sidebar-profile {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.profile-circle {
+    background-color: rgba(255, 255, 255, 0.2);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 10px auto;
+    border: 2px solid #C3A6A0;
+}
+
+.profile-email {
+    font-size: 0.9rem;
+    color: white;
+    text-align: center;
+    opacity: 0.8;
+    word-break: break-all;
+}
+
+/* Tarteak kudeatzeko */
+.nav-spacer {
+    margin-top: 40px;
+}
+
+/* Saioa itxi behean ainguratzeko */
+/* Oharra: Streamlit-en egiturak batzuetan zailtzen du hau, 
+baina margin-top: auto bidez saiatuko gara flexbox-ean */
+[data-testid="stSidebarUserContent"] {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sticky-bottom {
+    margin-top: auto;
+    padding-top: 90%; /* Tarte segurua amaieran */
+    padding-bottom: 20px;
+}
+
+
+/*KONTUAN*/
+/* 3. Botoi aukeratua (Primary) #C3A6A0 izateko */
+div.stButton > button[kind="primary"] {
+    background-color: #A15C38 !important;
+    border-color: #A15C38 !important;
+    /*color: white !important;*/
+}
+
+/* 3. Botoi aukeratua (Primary) #C3A6A0 izateko */s
+div.stButton > button[kind="secondary"] {
+    background-color: #C3A6A0 !important;
+    border-color: #C3A6A0 !important;
+    /*color: white !important;*/
+}
+
+.login-header {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #262220;
+}
+
+
+/* Login karratua berritu hondoarekin bat egiteko 
 .login-card {
-    background-color: #FFFFFF; 
+    background-color: white; 
     padding: 2.5rem;
     border-radius: 12px;
-    border: 1px solid #444;
-    max-width: 400px; 
+    border: 1px solid #C3A6A0;
+    max-width: 450px; 
     margin: 0 auto;
-    text-align: left;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
-}
-*/
-.login-header {
-    font-size: 3.2rem; /* Apur bat txikiagoa, txartela estuagoa delako */
-    font-weight: bold;
-    line-height: 1.1;
-    margin-bottom: 1.2rem;
-    color: black;
-}
-
-/* Komponente arteko tarteak txikitzeko */
-.stMarkdown {
-    margin-bottom: -10px;
-}
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
+}*/
